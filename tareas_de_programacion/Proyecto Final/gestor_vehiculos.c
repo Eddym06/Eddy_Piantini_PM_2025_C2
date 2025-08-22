@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <windows.h>
+#include <conio.h>
 
 // Constantes y Estructuras
 #define MAX_VEHICULOS 50
@@ -44,6 +45,9 @@ void listarVehiculos();
 void configurarDatosGenerales();
 void calcularCostoViaje();
 void mostrarMenu();
+int seleccionarVehiculo();
+int verificarControlZ(char* entrada);
+int verificarSalida(char* entrada);
 
 // Funciones para persistencia con archivos binarios 
 void guardarDatos();
@@ -55,6 +59,7 @@ void presioneEnterParaContinuar();
 void limpiarPantalla();
 int buscarVehiculoPorPlaca(const char* placa);
 void leerCadena(const char* mensaje, char* destino, int tamano);
+int leerCadenaConSalida(const char* mensaje, char* destino, int tamano);
 
 
 // Funcion Principal
@@ -67,95 +72,129 @@ return 0;
 // Implementacion de Funciones del Menu
 
 void mostrarMenu() {
-int opcion;
-do {
-limpiarPantalla();
+    char entrada[10];
+    int opcion;
+    do {
+        limpiarPantalla();
 
-// Configurar color cian para el titulo
-HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+        // Configurar color cian para el titulo
+        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+        SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
 
-printf("=============================================\n");
-printf("     SISTEMA DE GESTION DE VEHICULOS\n");
-printf("=============================================\n");
+        printf("=============================================\n");
+        printf("     SISTEMA DE GESTION DE VEHICULOS\n");
+        printf("=============================================\n");
 
-// Restablecer color a blanco
-SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        // Restablecer color a blanco
+        SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 
-printf("   Precio Gasolina: $%.2f\n", datos_generales.costo_gasolina);
-printf("   Precio Gasoil:   $%.2f\n", datos_generales.costo_gasoil);
+        printf("   Precio Gasolina: $%.2f\n", datos_generales.costo_gasolina);
+        printf("   Precio Gasoil:   $%.2f\n", datos_generales.costo_gasoil);
 
-// Configurar color cian para la linea de separacion
-SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-printf("---------------------------------------------\n");
+        // Configurar color cian para la linea de separacion
+        SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+        printf("---------------------------------------------\n");
 
-// Restablecer color a blanco
-SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        // Restablecer color a blanco
+        SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 
-printf("1. Crear Vehiculo\n");
-printf("2. Modificar Vehiculo\n");
-printf("3. Eliminar Vehiculo\n");
-printf("4. Listar Vehiculos\n");
-printf("5. Calcular Costo de Viaje\n");
-printf("6. Configurar Precios de Combustible\n");
-printf("0. Salir y Guardar\n");
+        printf("1. Crear Vehiculo\n");
+        printf("2. Modificar Vehiculo\n");
+        printf("3. Eliminar Vehiculo\n");
+        printf("4. Listar Vehiculos\n");
+        printf("5. Calcular Costo de Viaje\n");
+        printf("6. Configurar Precios de Combustible\n");
+        printf("0. Salir y Guardar\n");
 
-// Configurar color cian para la linea de separacion
-SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-printf("=============================================\n");
+        // Configurar color cian para la linea de separacion
+        SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+        printf("=============================================\n");
+        
+        // Restablecer color a blanco
+        SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        
+        printf("Seleccione una opcion: ");
+        
+        if (fgets(entrada, sizeof(entrada), stdin) == NULL) {
+            // Control+Z detectado (EOF)
+            printf("\n\nControl+Z detectado. Guardando y saliendo...\n");
+            guardarDatos();
+            printf("Datos guardados exitosamente.\n");
+            printf("¡Gracias por usar el Sistema de Gestion de Vehiculos!\n");
+            exit(0);
+        }
+        
+        // Verificar si el usuario escribió Control+Z como texto
+        if (verificarControlZ(entrada)) {
+            printf("Guardando y saliendo...\n");
+            guardarDatos();
+            printf("Datos guardados exitosamente.\n");
+            printf("¡Gracias por usar el Sistema de Gestion de Vehiculos!\n");
+            exit(0);
+        }
+        
+        opcion = atoi(entrada);
 
-// Restablecer color a blanco
-SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-
-printf("Seleccione una opcion: ");
-scanf("%d", &opcion);
-limpiarBufferEntrada();
-
-switch (opcion) {
-case 1: crearVehiculo(); break;
-case 2: modificarVehiculo(); break;
-case 3: eliminarVehiculo(); break;
-case 4: listarVehiculos(); break;
-case 5: calcularCostoViaje(); break;
-case 6: configurarDatosGenerales(); break;
-case 0:
-guardarDatos();
-printf("Datos guardados. Saliendo del programa...\n");
-break;
-default:
-printf("Opcion no valida. Por favor, intente de nuevo.\n");
-break;
-}
-if (opcion != 0) {
-presioneEnterParaContinuar();
-}
-} while (opcion != 0);
+        switch (opcion) {
+        case 1: crearVehiculo(); break;
+        case 2: modificarVehiculo(); break;
+        case 3: eliminarVehiculo(); break;
+        case 4: listarVehiculos(); break;
+        case 5: calcularCostoViaje(); break;
+        case 6: configurarDatosGenerales(); break;
+        case 0:
+            guardarDatos();
+            printf("Datos guardados. Saliendo del programa...\n");
+            break;
+        default:
+            printf("Opcion no valida. Por favor, intente de nuevo.\n");
+            break;
+        }
+        if (opcion != 0) {
+            presioneEnterParaContinuar();
+        }
+    } while (opcion != 0);
 }
 
 void crearVehiculo() {
-limpiarPantalla();
-printf("--- CREAR NUEVO VEHICULO ---\n");
-if (num_vehiculos >= MAX_VEHICULOS) {
-printf("Error: Se ha alcanzado el maximo de vehiculos.\n");
-return;
-}
+    limpiarPantalla();
+    printf("--- CREAR NUEVO VEHICULO ---\n");
+    if (num_vehiculos >= MAX_VEHICULOS) {
+        printf("Error: Se ha alcanzado el maximo de vehiculos.\n");
+        return;
+    }
 
-Vehiculo v;
-float temp_float;
-int temp_int;
+    printf("Opciones disponibles: 's' para menu principal, Ctrl+Z para salir\n");
+    printf("--------------------------------------------------------------\n");
 
-leerCadena("Placa: ", v.placa, 20);
-if (buscarVehiculoPorPlaca(v.placa) != -1) {
-printf("Error: La placa '%s' ya existe.\n", v.placa);
-return;
-}
+    Vehiculo v;
+    float temp_float;
+    int temp_int;
 
-leerCadena("Marca: ", v.marca, 50);
-leerCadena("Modelo: ", v.modelo, 50);
+    if (leerCadenaConSalida("Placa: ", v.placa, 20)) {
+        printf("Operacion cancelada.\n");
+        return;
+    }
+    if (buscarVehiculoPorPlaca(v.placa) != -1) {
+        printf("Error: La placa '%s' ya existe.\n", v.placa);
+        return;
+    }
 
-do {
-leerCadena("Tipo de combustible (Gasolina/Gasoil): ", v.tipo_combustible, 10);
-} while (strcmp(v.tipo_combustible, "Gasolina") != 0 && strcmp(v.tipo_combustible, "Gasoil") != 0);
+    if (leerCadenaConSalida("Marca: ", v.marca, 50)) {
+        printf("Operacion cancelada.\n");
+        return;
+    }
+    if (leerCadenaConSalida("Modelo: ", v.modelo, 50)) {
+        printf("Operacion cancelada.\n");
+        return;
+    }
+
+    do {
+        if (leerCadenaConSalida("Tipo de combustible (Gasolina/Gasoil): ", v.tipo_combustible, 10)) {
+            printf("Operacion cancelada.\n");
+            return;
+        }
+    } while (strcmp(v.tipo_combustible, "Gasolina") != 0 && strcmp(v.tipo_combustible, "Gasoil") != 0);
 
 // Bucle do-while para validacion de entrada 
 do {
@@ -220,35 +259,42 @@ printf("\nVehiculo anadido correctamente!\n");
 }
 
 void modificarVehiculo() {
-char placa_buscada[20];
-limpiarPantalla();
-printf("--- MODIFICAR VEHICULO ---\n");
-if (num_vehiculos == 0) {
-printf("No hay vehiculos para modificar.\n");
-return;
-}
+    limpiarPantalla();
+    printf("--- MODIFICAR VEHICULO ---\n");
+    if (num_vehiculos == 0) {
+        printf("No hay vehiculos para modificar.\n");
+        return;
+    }
 
-listarVehiculos();
-leerCadena("\nIngrese la placa del vehiculo a modificar: ", placa_buscada, 20);
+    int indice = seleccionarVehiculo();
+    if (indice == -1) {
+        printf("Operacion cancelada.\n");
+        return;
+    }
 
-int indice = buscarVehiculoPorPlaca(placa_buscada);
-if (indice == -1) {
-printf("Error: No se encontro un vehiculo con esa placa.\n");
-return;
-}
+    printf("\nModificando vehiculo #%d (Placa: %s).\n", indice + 1, vehiculos[indice].placa);
 
-printf("\nModificando vehiculo con placa %s. Deje en blanco para no cambiar.\n", placa_buscada);
+    // Pedir todos los datos de nuevo, 
+    Vehiculo* v = &vehiculos[indice]; // Puntero a la estructura en el arreglo 
 
-// Pedir todos los datos de nuevo, 
-Vehiculo* v = &vehiculos[indice]; // Puntero a la estructura en el arreglo 
+    printf("Introduzca los nuevos datos:\n");
+    printf("Opciones disponibles: 's' para menu principal, Ctrl+Z para salir\n");
+    printf("--------------------------------------------------------------\n");
+    if (leerCadenaConSalida("Marca: ", v->marca, 50)) {
+        printf("Operacion cancelada.\n");
+        return;
+    }
+    if (leerCadenaConSalida("Modelo: ", v->modelo, 50)) {
+        printf("Operacion cancelada.\n");
+        return;
+    }
 
-printf("Introduzca los nuevos datos:\n");
-leerCadena("Marca: ", v->marca, 50);
-leerCadena("Modelo: ", v->modelo, 50);
-
-do {
-leerCadena("Tipo de combustible (Gasolina/Gasoil): ", v->tipo_combustible, 10);
-} while (strcmp(v->tipo_combustible, "Gasolina") != 0 && strcmp(v->tipo_combustible, "Gasoil") != 0);
+    do {
+        if (leerCadenaConSalida("Tipo de combustible (Gasolina/Gasoil): ", v->tipo_combustible, 10)) {
+            printf("Operacion cancelada.\n");
+            return;
+        }
+    } while (strcmp(v->tipo_combustible, "Gasolina") != 0 && strcmp(v->tipo_combustible, "Gasoil") != 0);
 
 printf("Rendimiento en carretera (Km/Galon): ");
 scanf("%f", &v->km_por_galon_carretera);
@@ -298,7 +344,6 @@ printf("\nVehiculo modificado correctamente!\n");
 }
 
 void eliminarVehiculo() {
-char placa_buscada[20];
 limpiarPantalla();
 printf("--- ELIMINAR VEHICULO ---\n");
 if (num_vehiculos == 0) {
@@ -306,22 +351,29 @@ printf("No hay vehiculos para eliminar.\n");
 return;
 }
 
-listarVehiculos();
-leerCadena("\nIngrese la placa del vehiculo a eliminar: ", placa_buscada, 20);
+    int indice = seleccionarVehiculo();
+    if (indice == -1) {
+        printf("Operacion cancelada.\n");
+        return;
+    }
 
-int indice = buscarVehiculoPorPlaca(placa_buscada);
-if (indice == -1) {
-printf("Error: No se encontro un vehiculo con esa placa.\n");
-return;
-}
+printf("¿Esta seguro de eliminar el vehiculo #%d (Placa: %s)? (s/n): ", 
+       indice + 1, vehiculos[indice].placa);
+char confirmacion[10];
+fgets(confirmacion, sizeof(confirmacion), stdin);
+confirmacion[strcspn(confirmacion, "\n")] = 0;
 
+if (confirmacion[0] == 's' || confirmacion[0] == 'S') {
 // Desplazar los elementos del arreglo para llenar el hueco
 for (int i = indice; i < num_vehiculos - 1; i++) {
 vehiculos[i] = vehiculos[i + 1];
 }
 num_vehiculos--;
 
-printf("\nVehiculo con placa %s eliminado correctamente.\n", placa_buscada);
+printf("\nVehiculo #%d eliminado correctamente.\n", indice + 1);
+} else {
+printf("Operacion cancelada.\n");
+}
 }
 
 
@@ -333,10 +385,11 @@ printf("No hay vehiculos registrados.\n");
 return;
 }
 
-printf("%-15s | %-15s | %-15s | %-10s\n", "Placa", "Marca", "Modelo", "Combustible");
-printf("------------------------------------------------------------------\n");
+printf("%-5s | %-15s | %-15s | %-15s | %-10s\n", "No.", "Placa", "Marca", "Modelo", "Combustible");
+printf("--------------------------------------------------------------------------\n");
 for (int i = 0; i < num_vehiculos; i++) {
-printf("%-15s | %-15s | %-15s | %-10s\n",
+printf("%-5d | %-15s | %-15s | %-15s | %-10s\n",
+i + 1,
 vehiculos[i].placa,
 vehiculos[i].marca,
 vehiculos[i].modelo,
@@ -345,7 +398,6 @@ vehiculos[i].tipo_combustible);
 }
 
 void calcularCostoViaje() {
-char placa_buscada[20];
 limpiarPantalla();
 printf("--- CALCULAR COSTO DE VIAJE ---\n");
 if (num_vehiculos == 0) {
@@ -353,14 +405,11 @@ printf("No hay vehiculos registrados para calcular.\n");
 return;
 }
 
-listarVehiculos();
-leerCadena("\nIngrese la placa del vehiculo a utilizar: ", placa_buscada, 20);
-
-int indice = buscarVehiculoPorPlaca(placa_buscada);
-if (indice == -1) {
-printf("Error: Vehiculo no encontrado.\n");
-return;
-}
+    int indice = seleccionarVehiculo();
+    if (indice == -1) {
+        printf("Operacion cancelada.\n");
+        return;
+    }
 
 Vehiculo v = vehiculos[indice];
 float km_viaje, porc_ciudad;
@@ -504,6 +553,109 @@ printf("%s", mensaje);
 fgets(destino, tamano, stdin);
 // Eliminar el salto de linea que fgets suele anadir
 destino[strcspn(destino, "\n")] = 0;
+}
+
+// Función para leer cadena con opciones de salida (retorna 1 si quiere salir, 0 si continúa)
+int leerCadenaConSalida(const char* mensaje, char* destino, int tamano) {
+    printf("%s", mensaje);
+    
+    if (fgets(destino, tamano, stdin) == NULL) {
+        // Control+Z detectado (EOF)
+        printf("\nControl+Z detectado. Saliendo...\n");
+        return 1;
+    }
+    
+    // Eliminar el salto de línea
+    destino[strcspn(destino, "\n")] = 0;
+    
+    // Verificar si quiere salir
+    if (verificarControlZ(destino) || verificarSalida(destino)) {
+        return 1; // Quiere salir
+    }
+    
+    return 0; // Continúa
+}
+
+// Función para verificar si el usuario escribió Control+Z como texto
+int verificarControlZ(char* entrada) {
+    // Eliminar espacios en blanco y saltos de línea
+    char* ptr = entrada;
+    while (*ptr == ' ' || *ptr == '\t' || *ptr == '\n' || *ptr == '\r') {
+        ptr++;
+    }
+    
+    // Verificar diferentes formas de escribir Control+Z
+    return (strstr(ptr, "ctrl+z") != NULL || 
+            strstr(ptr, "Ctrl+Z") != NULL || 
+            strstr(ptr, "CTRL+Z") != NULL ||
+            strstr(ptr, "ctrl z") != NULL ||
+            strstr(ptr, "Ctrl Z") != NULL ||
+            strstr(ptr, "CTRL Z") != NULL ||
+            strcmp(ptr, "^Z") == 0);
+}
+
+// Función mejorada para seleccionar vehículo por número
+int seleccionarVehiculo() {
+    if (num_vehiculos == 0) {
+        printf("No hay vehiculos registrados.\n");
+        return -1;
+    }
+    
+    // Mostrar lista numerada de vehículos
+    printf("\n=== LISTA DE VEHICULOS ===\n");
+    printf("%-4s| %-10s| %-15s| %-15s| %-10s\n", "No.", "Placa", "Marca", "Modelo", "Combustible");
+    printf("----+----------+---------------+---------------+-----------\n");
+    
+    for (int i = 0; i < num_vehiculos; i++) {
+        printf("%-4d| %-10s| %-15s| %-15s| %-10s\n", 
+               i + 1, 
+               vehiculos[i].placa, 
+               vehiculos[i].marca, 
+               vehiculos[i].modelo, 
+               vehiculos[i].tipo_combustible);
+    }
+    printf("====================================================\n");
+    printf("Opciones disponibles: 's' para menu principal, Ctrl+Z para salir\n");
+    
+    char entrada[10];
+    printf("\nSeleccione el numero del vehiculo (1-%d): ", num_vehiculos);
+    
+    if (fgets(entrada, sizeof(entrada), stdin) == NULL) {
+        printf("Error al leer la entrada.\n");
+        return -1;
+    }
+    
+    // Verificar Control+Z
+    if (verificarControlZ(entrada)) {
+        printf("Operacion cancelada por el usuario.\n");
+        return -1;
+    }
+    
+    // Verificar si escribió 's' para salir
+    if (verificarSalida(entrada)) {
+        printf("Saliendo al menu principal...\n");
+        return -1;
+    }
+    
+    int numero = atoi(entrada);
+    if (numero < 1 || numero > num_vehiculos) {
+        printf("Error: Numero invalido. Debe estar entre 1 y %d.\n", num_vehiculos);
+        return -1;
+    }
+    
+    return numero - 1; // Convertir a índice base 0
+}
+
+// Función para verificar si el usuario escribió 's' para salir
+int verificarSalida(char* entrada) {
+    // Eliminar espacios en blanco y saltos de línea
+    char* ptr = entrada;
+    while (*ptr == ' ' || *ptr == '\t' || *ptr == '\n' || *ptr == '\r') {
+        ptr++;
+    }
+    
+    // Verificar si escribió 's' o 'S' para salir
+    return (strcmp(ptr, "s") == 0 || strcmp(ptr, "S") == 0);
 }
 
 // Espero que le haya gustado mi codigo profesor ;)
